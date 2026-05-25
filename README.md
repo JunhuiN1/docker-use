@@ -106,7 +106,7 @@ tmux a -t vln_run
 python --version
 
 # 2. 验证 NVIDIA 显卡是否成功打通
-nvidia-smi
+nvidia-smi  
 
 # 3. 展开你的科研实验
 cd /workspace
