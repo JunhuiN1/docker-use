@@ -25,8 +25,10 @@
 ## 🛠️ File Structure
 
 在开始构建前，请确保将关键配置文件放置在物理机的同一个实验工作区内（例如 `/data/Newdisk/robotdog/` 或 `~/docker_test`）：
-❗❗❗事先声明：这个README是对vlnce_ETPnav的环境配置，自己建的时候不要再使用这个名字，并注意这个环境中的habita-sim-headless是在python3.6环境下的v0.1.7版本
-conda install habitat-sim-0.1.7-py3.6_headless_linux_856d4b08c1a2632626bf0d205bf46471a99502b7.tar.bz2，habitat-lab版本需要与之匹配，且habitat-sim必须是headless版本否则服务器无法运行。
+❗❗❗事先声明：这个README是对vlnce_ETPnav的环境配置，自己建的时候不要再使用这个名字，并注意这个环境中的habita-sim-headless是在python3.6环境下的v0.1.7版本，habitat-lab版本需要与之匹配，且habitat-sim必须是headless版本否则服务器无法运行。
+```text
+conda install habitat-sim-0.1.7-py3.6_headless_linux_856d4b08c1a2632626bf0d205bf46471a99502b7.tar.bz2
+```
 ❗❗❗habitat-lab 无法从服务器直接git clone，需要自行前往https://github.com/facebookresearch/habitat-lab
 ```text
 └── workspace/
