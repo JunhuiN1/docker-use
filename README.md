@@ -25,24 +25,30 @@
 ## 🛠️ File Structure
 
 在开始构建前，请确保将关键配置文件放置在物理机的同一个实验工作区内（例如 `/data/Newdisk/robotdog/` 或 `~/docker_test`）：
-
+❗❗❗事先声明：这个README是对vlnce_ETPnav的环境配置，自己建的时候不要再使用这个名字，并注意这个环境中的habita-sim-headless是在python3.6环境下的v0.1.7版本，habitat-lab版本需要与之匹配，且habitat-sim必须是headless版本否则服务器无法运行。
+❗❗❗habitat-lab 无法从服务器直接git clone，需要自行前往https://github.com/facebookresearch/habitat-lab点击绿色“code”按钮选择“Download ZIP”，下载到自己的电脑，再上传服务器（推荐下载winSCP,传输大的数据集用这个不容易出现文件损坏）
 ```text
 └── workspace/
     ├── Dockerfile          # Docker 镜像构建说明书
     ├── environment.yml     # Conda 基础依赖环境配置
-    └── requirements.txt    # habitat-lab 核心 pip 依赖清单
+    ├── habita-lab  #安装habita-lab版本需要和habita-sim-headless版本匹配
+    └── data    # 存放mp3d与hm3d数据集
 ```
 
 ---
 
 ## 🐳 Configuration Files
 💡 GitHub Tip: 点击下方展开标签查看精准的生产环境配置文件。
+打开dockfile
+```text
+nano dockfile
+```
+在dockfile中直接复制粘贴以下指令
 ```text
 FROM anaconda/miniconda:latest
 
 # 拷贝环境配置文件到镜像内部临时目录
-COPY environment.yml /tmp/environment.yml
-COPY requirements.txt /tmp/requirements.txt
+COPY environment.yml /tmp/environment.yml #这里的environment是针对于ETP的环境，换成另外的环境需修改
 
 # 1. 配置国内高性能镜像源 (南京大学 Conda 源 + 阿里云 pip 源)
 RUN conda config --remove-key channels || true && \
@@ -65,6 +71,8 @@ RUN echo "conda activate vlnce_ETPnav" >> ~/.bashrc
 
 CMD ["/bin/bash", "--login"]
 ```
+按ctrl+o保存，再按Enter，最后按ctrl+x退出nano编辑器
+
 ## 🚀 Quick Start
 1. Build Image
 在 Dockerfile 所在目录下执行编译。得益于内嵌的国内高速镜像源，系统会自动拉取并固化所有环境：
@@ -72,17 +80,50 @@ CMD ["/bin/bash", "--login"]
 docker build -t vlnce_env:v1 .
 ```
 2. Run Container
-使用以下标准指令挂载物理机大硬盘数据目录，并一键挺进实验环境：
+由于服务器有的时候会出现断网的现象，防止之前开好的容器被下面的--rm删除了，所以先在tmux开个房间，它能让你的程序在服务器后台常驻，哪怕你本地电脑关机、断网，服务器上的程序也会继续跑。
 ```text
-docker run -it \
-  --rm \
-  --gpus all \
-  -v /data/Newdisk/robotdog:/workspace \
-  vlnce_env:v1 \
-  /bin/bash
+tmux new -s vln_run #vln_run可以换成任何你想取的名字
+docker run -it --rm --gpus all -v /data/Newdisk/robotdog:/workspace vlnce_env:v1 /bin/bash
 ```
+
+网络恢复后重新连上服务器，输入一句话就能瞬间回到刚才的 Docker 现场：
+```text
+tmux a -t vln_run
+```
+
+💡 参数解析：
+--rm: 退出容器后自动销毁临时容器房间，绝不占用服务器垃圾磁盘空间。
+-v: 把物理机存储/代码的绝对路径挂载为容器内的 /workspace。
+
 [!IMPORTANT]
 关于数据持久化：
 容器启动命令中添加了 -v /data/Newdisk/robotdog:/workspace 挂载参数。这意味着容器内的 /workspace 目录与大硬盘绝对路径完全实时同步。在容器内做的任何代码修改、解压操作以及训练产生的模型权重，都会直接写入物理大硬盘，容器销毁后绝不丢失。
 
+## 环境验收与代码运行
+进入容器后，系统已通过 .bashrc 全自动激活 好了你的 vlnce_ETPnav 环境，直接就是要求的系统版本：
+```text
+# 1. 验证 Python 版本（应输出项目指定的旧版本，如 Python 3.6.x）
+python --version
 
+# 2. 验证 NVIDIA 显卡是否成功打通
+nvidia-smi
+
+# 3. 展开你的科研实验
+cd /workspace
+python 你的主程序.py
+```
+##关闭/退出容器
+```text
+exit
+```
+##💡 Tips查看容器状态 (常驻与监控)
+
+如果你想在物理机上确认当前有哪些 Docker 环境正在运行，可以在物理机终端执行以下命令：
+查看当前正在运行的容器：
+```text
+docker ps
+```
+查看服务器上所有留存的“环境模具”(镜像)：
+```text
+docker images
+```
